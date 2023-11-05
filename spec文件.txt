@@ -1,0 +1,43 @@
+这是一个简单的.spec文件示例，以下是各个参数的意义：
+
+a：Analysis对象，指定要打包的Python脚本文件路径、依赖项等信息。
+  ['D:\\v_conda\\tan_chuang.py']：要打包的Python脚本文件路径。
+  pathex=[]：搜索模块的路径列表。
+  binaries=[]：要包含在打包文件中的二进制文件列表。
+  datas=[]：要包含在打包文件中的数据文件列表。
+  hiddenimports=[]：需要手动导入的模块列表。
+  hookspath=[]：hook模块的路径列表。
+  hooksconfig={}：hook模块的配置字典。
+  runtime_hooks=[]：运行时hook模块的路径列表。
+  excludes=[]：要排除的模块列表。
+  noarchive=False：是否生成zip文件。
+
+pyz：PYZ对象，用于指定生成的Python字节码文件的名称和位置。
+  a.pure：生成的Python字节码文件的名称和位置。
+
+exe：EXE对象，用于指定生成的可执行文件的名称、位置和其他参数。
+  pyz：指定要打包的Python字节码文件。
+  a.scripts：指定要打包的Python脚本文件。
+  exclude_binaries=True：是否排除二进制文件。
+  name='tan_chuang'：生成的可执行文件的名称。
+  debug=False：是否包含调试信息。
+  bootloader_ignore_signals=False：是否忽略bootloader的信号。
+  strip=False：是否去除debug信息。
+  upx=True：是否使用UPX压缩可执行文件。
+  console=False：是否显示控制台窗口。
+  disable_windowed_traceback=False：是否禁用窗口模式下的traceback。
+  argv_emulation=False：是否启用argv emulation。
+  target_arch=None：目标架构。
+  codesign_identity=None：codesign identity。
+  entitlements_file=None：entitlements file。
+
+coll：COLLECT对象，用于指定生成的打包文件的名称、位置和其他参数。
+  exe：指定生成的可执行文件。
+  a.binaries：指定要包含在打包文件中的二进制文件列表。
+  a.datas：指定要包含在打包文件中的数据文件列表。
+  strip=False：是否去除debug信息。
+  upx=True：是否使用UPX压缩打包文件。
+  upx_exclude=[]：要排除的文件列表。
+  name='tan_chuang'：生成的打包文件的名称。
+
+希望这些信息对你有所帮助！

@@ -1,0 +1,17 @@
+PyInstaller是一个用于将Python应用程序打包成独立可执行文件的工具。它可以将Python脚本打包成可执行文件，无需安装Python解释器和依赖库，方便在其他机器上运行。
+
+PyInstaller的打包命令为：
+
+pyinstaller [options] script.py
+
+-F：将所有依赖项和脚本打包成单个可执行文件。
+-w：生成一个不带控制台窗口的Windows可执行文件。
+-c：生成一个带有控制台窗口的Windows可执行文件。
+-n name：指定生成的可执行文件的名称。
+-i icon.ico：指定可执行文件的图标文件。
+
+
+使用 pyi-makespec 命令生成.spec文件
+
+pyinstaller [options] script.spec
+
