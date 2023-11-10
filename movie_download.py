@@ -1,4 +1,4 @@
-import scrapy
+from scrapy import Spider, Request
 from scrapy.crawler import CrawlerProcess
 import os
 from gather import file_gather
@@ -11,7 +11,6 @@ video_name = input("输入视频名称:")  # 保存m3u8文件
 ts_path = input("输入ts文件保存地址(文件夹绝对地址):")
 cwd = os.getcwd()
 
-
 # 建文件夹保存ts
 try:
     os.listdir(ts_path)
@@ -23,6 +22,7 @@ except FileNotFoundError:
 pre_num = len(os.listdir(ts_path))  # 已下载文件数量
 add_var = pre_num
 order_list = []  # 后面获取ts顺序
+name_list = []
 total = 0
 
 
@@ -43,21 +43,23 @@ def save_ts(resp):  # 保存ts
     with open(f'{ts_path}/{ts_name}', 'wb') as f:
         f.write(resp.body)
     add_var += 1
-    progress_bar(total, add_var)      # 显示进度条
+    progress_bar(total, add_var)  # 显示进度条
 
 
-class M3u8Spider(scrapy.Spider):
+class M3u8Spider(Spider):
     name = 'm3u8_spider'
     start_urls = m3u8_url
 
     def parse(self, response, **kwargs):
         # with open(f'{video_name}.m3u8', 'wb') as f:
         #     f.write(response.body)
-        print(f'm3u8文件保存在{cwd}/{video_name}.m3u8')
+        # print(f'm3u8文件保存在{cwd}/{video_name}.m3u8')
         # 解析m3u8文件
-        global order_list, total
-        order_list = list(m3u8_parse(f'{video_name}.m3u8'))  # 获取ts的顺序,用于合并
-        total = len(order_list)  # ts总数
+        global order_list, total, name_list
+        order_list = m3u8_parse(f'{video_name}.m3u8')  # 获取ts的顺序,用于合并
+        for url in order_list:
+            name_list.append(url.split('/')[-1])
+        total = len(name_list)  # ts总数
         print(f'已下载{pre_num}个文件')
         print(f'共{total}个文件')
         ts_url_lst = m3u8_parse(f'{video_name}.m3u8')
@@ -65,10 +67,10 @@ class M3u8Spider(scrapy.Spider):
             if ts_url.split('/')[-1] in os.listdir(ts_path):  # 去重
                 continue
             else:
-                yield scrapy.Request(url=ts_url,
-                                     method='get',
-                                     callback=save_ts
-                                     )
+                yield Request(url=ts_url,
+                              method='get',
+                              callback=save_ts
+                              )
 
 
 def run_spider():
@@ -87,11 +89,17 @@ def run_spider():
 def save_movie(target_path, method):
     # 合并文件
     if method:  # 是否绝对地址
-        os.makedirs('/'.join(target_path.split('/')[:-1]))      # 新建文件夹
-        file_gather(ts_path, target_path, order_list)
+        dirs = '/'.join(target_path.split('/')[:-1])
+        try:
+            os.listdir(dirs)
+            print('已存在此目录,将在此保存mp4文件')
+        except FileNotFoundError:
+            os.makedirs(dirs)
+            print('无所指目录,已新建用于保存mp4文件')
+        file_gather(ts_path, target_path, name_list)
         print(f'视频保存至{target_path}')
     else:
-        file_gather(ts_path, f'D:/movie/{target_path}', order_list)
+        file_gather(ts_path, f'D:/movie/{target_path}', name_list)
         print(f'视频保存至默认文件夹 D:/movie/{target_path}')
 
 
