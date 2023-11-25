@@ -1,0 +1,10 @@
+日志显示
+LOG_LEVEL = 'WARNING'
+
+管道开启
+ITEM_PIPELINES = {
+   "example.pipelines.ExamplePipeline": 300,    # key是管道路径, value为优先级, 越小越优先
+}
+
+# 用ImagesPipeline需要单独配置, 用来保存文件的文件夹
+IMAGES_STORE = './folder'   文件夹
