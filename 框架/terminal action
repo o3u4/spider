@@ -1,4 +1,5 @@
 scrapy startproject example     生成项目
 cd example  进入目录
 scrapy genspider exp baidu.com  生成爬虫
+scrapy genspider -t crawl exp baidu.com     全站爬虫
 scrapy crawl exp    启动爬虫
