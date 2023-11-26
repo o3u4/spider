@@ -1,1 +1,10 @@
 将项目标记为根目录可以去除导包报错
+
+Middlewares里有用的是DownloaderMiddleware里的process_request, 别的可以删除
+
+用selenium时要替换掉原来的downloader, 原来的中间件没有意义
+原来的中间件最大的优先级为100, 则需设置优先级高于100, 如99
+
+用selenium, 在根目录下新建一个module, 自定义一个selenium的request类,
+用于判断发送何种请求, 后续封装响应在process_request里, 在spider_opened里完成登录等操作,
+解析在spider的parse完成
