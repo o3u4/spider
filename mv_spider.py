@@ -5,6 +5,7 @@ import os
 from adv_gather import Gather
 
 
+# 电影爬虫内核,可按需更改parse逻辑
 class LocalSpider(Spider):
     name = 'local_spider'
 
@@ -70,7 +71,7 @@ class LocalSpider(Spider):
                 if ts_url.split('/')[-1] in os.listdir(self.ts_path):  # 去重
                     continue
                 else:
-                    yield Request(url=ts_url,
+                    yield Request(url=response.urljoin(ts_url),
                                   method='get',
                                   callback=self.save_ts
                                   )
@@ -84,7 +85,7 @@ class LocalSpider(Spider):
         print(f'视频保存至{movie_path}')
 
     @classmethod
-    def run_spider(cls, name, urls, ts_path, root=None, prt_dl_label=None):
+    def run_spider(cls, name, urls, ts_path, root=None, prt_dl_label=None):     # 运行爬虫会新建实例
         process = CrawlerProcess(settings={
             'USER_AGENT': 'Mozilla/5.0',
             'ROBOTSTXT_OBEY': False,
