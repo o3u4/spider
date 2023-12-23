@@ -29,7 +29,7 @@ class Lattice:
     def change(self, x, y):     # 点击后改变的规则
         for xi in range(self.scale):
             for yj in range(self.scale):
-                if self.dist((x, y), (xi, yj)) <= 1:
+                if self.dist((x, y), (xi, yj)) <= self.scale - 2:
                     if self.txt_list[self.scale * xi + yj].get() == '0':
                         self.txt_list[self.scale * xi + yj].set('1')
                     else:
