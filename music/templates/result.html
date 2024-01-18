@@ -1,0 +1,32 @@
+<!-- result.html -->
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>处理结果</title>
+</head>
+<body>
+    <h2>搜索到的歌曲(关键词:{{ key }})</h2>
+    <h3>第{{ page }}页</h3>
+    <table border="1">
+        <tr>
+            <th>序号</th>
+            <th>歌曲</th>
+            <th>编号</th>
+        </tr>
+        {% for i in range(list1|length) %}
+        <tr>
+            <td>{{ order_list[i] }}</td>
+            <td>{{ list1[i] }}</td>
+            <td>{{ list2[i] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    <h3>输入要下载的歌曲序号, 以空格分割</h3>
+    <form action="/download" method="post">
+        <input type="text" name="order">
+        <input type="submit" value="提交">
+    </form>
+    <h2><a href="{{ next_page }}">下一页</a></h2>
+</body>
+</html>

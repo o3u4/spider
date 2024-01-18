@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>已下载歌曲</title>
+</head>
+<body>
+    <h2>音乐库已下载歌曲</h2>
+    <table border="1">
+        <tr>
+            <th>序号</th>
+            <th>歌曲</th>
+            <th>下载链接</th>
+        </tr>
+        {% for i in range(msc_list|length) %}
+        <tr>
+            <td>{{ order_list[i] }}</td>
+            <td>{{ msc_list[i] }}</td>
+            <td><a href="{{ link_list[i] }}">保存</a></td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>
