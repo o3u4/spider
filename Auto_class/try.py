@@ -2,7 +2,8 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import ActionChains
 import time
-
+from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
 # 226002287 Twhzs233
 # https://registry.npmmirror.com/binary.html
@@ -115,18 +116,30 @@ def speed_run(driver):
     actions = ActionChains(driver)
     actions.move_to_element(video).perform()
     time.sleep(0.5)
-
+    # //div[@class='speedBox']/span
     spd_box_xpath = '//*[@id="vjs_container"]/div[10]/div[9]/span'
     box = driver.find_elements(By.XPATH, spd_box_xpath)[0]
     actions = ActionChains(driver)
     actions.move_to_element(box).perform()
 
     spd_xpath = '//*[@id="vjs_container"]/div[10]/div[9]/div/div[1]'
-    while 1:
-        spd = driver.find_elements(By.XPATH, spd_xpath)[0]
-        if spd:
-            spd.click()
-            break
+    while True:
+        spd_elements = driver.find_elements(By.XPATH, spd_xpath)
+        if spd_elements:
+            spd = spd_elements[0]
+            try:
+                WebDriverWait(driver, 2).until(EC.element_to_be_clickable((By.XPATH, spd_xpath)))
+                spd.click()
+                break
+            except:
+                print("Element is not clickable. Trying again...")
+        else:
+            print("Element not found. Trying again...")
+    # while 1:
+    #     spd = driver.find_elements(By.XPATH, spd_xpath)[0]
+    #     if spd:
+    #         spd.click()
+    #         break
 
     run_xpath = '//*[@id="playButton"]'
     run = driver.find_elements(By.XPATH, run_xpath)[0]
