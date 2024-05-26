@@ -87,30 +87,28 @@ def find_first_cls(chaps):
     """
     c = 0
     for chapter in chaps:
-        class_xpath = './div/li/div/span'  # 每个章节的课程
-        class_elements = chapter.find_elements(By.XPATH, class_xpath)  # 每个课的element
-        class_num = len(class_elements)
-        finished_list = []
-        for i in range(class_num):  # 第i节课
-            is_finished = chapter.find_elements(By.XPATH, f'./div[{i + 1}]/li/div/div/b[2]')
-            if is_finished:
-                finished_list.append(1)
-            else:
-                finished_list.append(0)
-        flag = True  # 假设该章节全部完成
+        c += 1
+        clickable_classes = chapter.find_elements(By.XPATH, './div/li[@class="clearfix video"]')
+        if not clickable_classes:   # 找不到课, 可能是还有分级
+            clickable_classes = chapter.find_elements(By.XPATH, './div/ul/li[@class="clearfix video"]')
         n = 0
-        for i in range(class_num):
-            if finished_list[i] == 0:
-                flag = False  # 未完成
-                n = i
-                print(class_elements[n].text)
-                break
-        t = chapter.find_elements(By.XPATH, f'div[{n + 1}]/li/div/div/span')[0].text
-        if not flag:  # 有未完成的
-            return class_elements[n], t, c, n  # 返回该课
-            break
-        else:
-            c += 1
+        for classes in clickable_classes:
+            n += 1
+            class_element = classes.find_elements(By.XPATH, './div/span')[0]  # 每个课的element
+            is_finished = classes.find_elements(By.XPATH, './div/div/b[2]')    # 是否完成
+            if is_finished:
+                continue
+            else:
+                print(class_element.text)
+                ts = classes.find_elements(By.XPATH, f'./div/div/span')
+                if not ts:
+                    ts = classes.find_elements(By.XPATH, f'./div/span[2]')
+                if ts:
+                    t = ts[0].text
+                else:
+                    t = 0
+                return class_element, t, c, n  # 返回该课
+    return None
 
 
 def speed_run(driver):
@@ -119,15 +117,40 @@ def speed_run(driver):
     :param driver:
     :return:
     """
-    videos_xpath = '//*[@id="vjs_container"]/div[8]'
-    video = driver.find_elements(By.XPATH, videos_xpath)[0]
-    actions = ActionChains(driver)
-    actions.move_to_element(video).perform()  # 移动鼠标到视频上
-    run_xpath = '//*[@id="playButton"]'
-    run = driver.find_elements(By.XPATH, run_xpath)[0]
-    run.click()  # 播放按钮开始播放
+    while True:  # 点击播放
+        videos_xpath = '//*[@id="vjs_container"]/div[8]'
+        videos = driver.find_elements(By.XPATH, videos_xpath)
+        if videos:
+            video = videos[0]
+            actions = ActionChains(driver)
+            actions.move_to_element(video).perform()  # 移动鼠标到视频上
+            run_xpath = '//*[@id="playButton"]'
+            run = driver.find_elements(By.XPATH, run_xpath)
+            if run:
+                try:
+                    WebDriverWait(driver, 2).until(EC.element_to_be_clickable((By.XPATH, run_xpath)))
+                    run[0].click()  # 播放按钮开始播放
+                    time.sleep(1)
+                    if exam_code(driver):  # 检查是否有验证码
+                        input("出现验证码")
+                    else:
+                        answer(driver)  # 防止直接跳出题目
+                    break
+                except:
+                    print("Play button Element is not clickable. Trying again...")
+                    # 防止 WebDriverWait 一直等不到按钮可点击
+                    if exam_code(driver):  # 检查是否有验证码
+                        input("出现验证码")
+                    else:
+                        answer(driver)  # 防止直接跳出题目
+            else:
+                print("Play button Element not found. Trying again...")
+        else:   # 没找到视频
+            print("Can't find video. Trying again...")
+            time.sleep(2)
+            break
 
-    while True:
+    while True:  # 点击倍速
         videos_xpath = '//*[@id="vjs_container"]/div[8]'
         video = driver.find_elements(By.XPATH, videos_xpath)[0]
         actions = ActionChains(driver)
@@ -149,9 +172,9 @@ def speed_run(driver):
                 spd.click()
                 break
             except:
-                print("Element is not clickable. Trying again...")
+                print("Speed Element is not clickable. Trying again...")
         else:
-            print("Element not found. Trying again...")
+            print("Speed Element not found. Trying again...")
 
 
 def iter_class(driver):
@@ -164,8 +187,14 @@ def iter_class(driver):
         find_first_cls(get_class(driver)))
     selected_class.click()
     print(class_tm)  # 00:06:11
-    time.sleep(2)   # 可以删除
-    speed_run(driver)
+    time.sleep(2)  # 可以删除, 防止直接跳题目
+    if exam_code(driver):  # 检查是否有验证码
+        input("出现验证码")
+    elif answer(driver):  # 防止直接跳出题目
+        pass
+    else:
+        time.sleep(2)
+        speed_run(driver)
 
     return selected_chap, order
 
@@ -191,7 +220,7 @@ def is_finished(present_driver, chap, od):
 
 def answer(driver):
     """
-    若出现问题, 则回答A, 然后关闭问题
+    若出现问题, 则回答A, 然后关闭问题, 然后点击播放
     :param driver:
     :return:
     """
@@ -201,22 +230,37 @@ def answer(driver):
         print('遇到问题, 即将自动回答')
         option_xpath = '//*[@id="playTopic-dialog"]/div/div[2]/div/div[1]/div/div/div[2]/ul/li'
         options = driver.find_elements(By.XPATH, option_xpath)
-        options[0].click()      # 尝试答案
+        options[0].click()  # 尝试答案
         close_xpath = '//*[@id="playTopic-dialog"]/div/div[3]/span/div'
         close = driver.find_elements(By.XPATH, close_xpath)
-        close[0].click()    # 关闭
+        close[0].click()  # 关闭
         print('回答完毕')
 
-        time.sleep(2)       # 可以删除
+        time.sleep(2)  # 可以删除
         speed_run(driver)
+        return True
+    else:
+        return False
 
 
-def exam_code():
+def exam_code(driver):
     """
     手动做验证码
     :return:
     """
-    return False
+    title_xpath = '/html/body/div[5]/div[2]/div/div/div[1]/span[2]'
+    title = driver.find_elements(By.XPATH, title_xpath)
+    if title:
+        return True
+    else:
+        return False
+
+
+def question_button(driver):
+    question_xpath = '//*[@id="app"]/div/div[2]/div[1]/div[3]/ul/li'
+    question = driver.find_elements(By.XPATH, question_xpath)
+    if question:
+        question[0].click()
 
 
 if __name__ == '__main__':
@@ -224,14 +268,14 @@ if __name__ == '__main__':
     driver_path = r"C:\Program Files\Google\Chrome\Application\chromedriver.exe"
 
     # 创建一个谷歌浏览器实例
-    chrome_driver = webdriver.Chrome(executable_path=driver_path)   # 同级目录下可不写
+    chrome_driver = webdriver.Chrome(executable_path=driver_path)  # 同级目录下可不写
     chrome_driver.maximize_window()  # 最大化显示
     select_course(chrome_driver)
     print("开始课程观看")
     selected_chap, order = iter_class(chrome_driver)
-    time.sleep(2)       # 防止直接跳出题目没被检测到
-    while 1:    # 每5秒检测是否完成
-        if exam_code():
+    time.sleep(2)  # 防止直接跳出题目没被检测到
+    while 1:  # 每5秒检测是否完成
+        if exam_code(chrome_driver):
             input("出现验证码")
         else:
             answer(chrome_driver)
