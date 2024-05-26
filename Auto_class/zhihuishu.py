@@ -85,9 +85,11 @@ def find_first_cls(chaps):
     :return:
     class_elements[n], t, c, n: 课程, 时长, 章节, 章节内课程序号
     """
+
     c = 0
     for chapter in chaps:
         c += 1
+        # 先找直接能看的第一级视频
         clickable_classes = chapter.find_elements(By.XPATH, './div/li[@class="clearfix video"]')
         if not clickable_classes:   # 找不到课, 可能是还有分级
             clickable_classes = chapter.find_elements(By.XPATH, './div/ul/li[@class="clearfix video"]')
@@ -95,8 +97,9 @@ def find_first_cls(chaps):
         for classes in clickable_classes:
             n += 1
             class_element = classes.find_elements(By.XPATH, './div/span')[0]  # 每个课的element
-            is_finished = classes.find_elements(By.XPATH, './div/div/b[2]')    # 是否完成
-            if is_finished:
+            is_finished_ = class_element.find_elements(By.XPATH, '..//b[@class="fl time_icofinish"]')
+            # 是否完成
+            if is_finished_:
                 continue
             else:
                 print(class_element.text)
@@ -196,22 +199,17 @@ def iter_class(driver):
         time.sleep(2)
         speed_run(driver)
 
-    return selected_chap, order
+    return selected_class, selected_chap, order
 
 
-def is_finished(present_driver, chap, od):
+def is_finished(cls):
     """
     不断判断是否完成视频
-    :param present_driver:  driver
-    :param chap:    选中章节
-    :param od:   选中视频
+    :param cls:  视频元素
     :return:
     """
-    xpath = (f'//*[@id="app"]/div/div[2]/div[2]/div[2]/div[1]/div/'
-             f'ul[{chap + 1}]/div[{od + 1}]/li/div/div/b[@class="fl time_icofinish"]')
-
-    '//*[@id="app"]/div/div[2]/div[2]/div[2]/div[1]/div/ul[8]/div[3]/li/div/div/div/div/div/svg'
-    elements = present_driver.find_elements(By.XPATH, xpath)
+    xpath = '..//b[@class="fl time_icofinish"]'
+    elements = cls.find_elements(By.XPATH, xpath)
     if elements:
         return True
     else:
@@ -272,13 +270,13 @@ if __name__ == '__main__':
     chrome_driver.maximize_window()  # 最大化显示
     select_course(chrome_driver)
     print("开始课程观看")
-    selected_chap, order = iter_class(chrome_driver)
+    selected_cls, selected_chap, order = iter_class(chrome_driver)
     time.sleep(2)  # 防止直接跳出题目没被检测到
     while 1:  # 每5秒检测是否完成
         if exam_code(chrome_driver):
             input("出现验证码")
         else:
             answer(chrome_driver)
-            if is_finished(chrome_driver, selected_chap, order):
-                selected_chap, order = iter_class(chrome_driver)
+            if is_finished(selected_cls):
+                selected_cls, selected_chap, order = iter_class(chrome_driver)
         time.sleep(5)
