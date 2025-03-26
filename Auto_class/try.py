@@ -17,7 +17,7 @@ def login_by_StudentID(driver):
     pswd = driver.find_elements(By.XPATH, '//*[@id="clPassword"]')[0]
     school.send_keys('宁波大学')
     stu_id.send_keys('226002287')
-    pswd.send_keys('Twhzs233')
+    pswd.send_keys('xxxxxxx')
 
 
 def select_course(driver):
